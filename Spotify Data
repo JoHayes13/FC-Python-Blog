@@ -1,0 +1,127 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import seaborn as sns
+
+import spotipy
+import spotipy.util as util
+from spotipy.oauth2 import SpotifyClientCredentials
+import spotipy.oauth2 as oauth2
+
+
+CLIENT_ID = "2d25e4789f1547f2839ae24f976b35be"
+CLIENT_SECRET = "278a960bb755496290321e25bb2735bc"
+
+client_credentials_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
+
+
+sp.audio_features(['4uLU6hMCjMI75M1A2tKUQC'])
+
+
+#Separate out the track listing from the main playlist object
+playlistTracks = sp.playlist('28gX2hq23N4WonSnRtRcUu')['tracks']['items']
+
+#Create empty lists for each datapoint we want to take
+artistName = []
+trackName = []
+trackID = []
+trackPop = []
+
+#Loop through each track and append the relevant information to the list
+for index, track in enumerate(playlistTracks):
+        artistName.append(track['track']['artists'][0]['name'])
+        trackName.append(track['track']['name'])
+        trackID.append(track['track']['id'])
+        trackPop.append(track['track']['popularity'])
+        
+        
+#How suitable the track is to bust a move, from 0 - 1
+danceability = []
+
+#Detects presence of an audience in the audio, 0 - 1
+liveness = []
+
+#How happy the track is, 0 - 1
+valence = []
+
+#How much the track is spoken word, vs song, 0 - 1
+speechiness = []
+
+#BPM
+tempo = []
+
+#Is the track acoustic? 0 - 1
+acousticness = []
+
+#How intense the song is, 0 - 1
+energy = []
+
+for index, track in enumerate(sp.audio_features(trackID)):
+        danceability.append(track['danceability'])
+        liveness.append(track['liveness'])
+        valence.append(track['valence'])
+        speechiness.append(track['speechiness'])
+        tempo.append(track['tempo'])
+        acousticness.append(track['acousticness'])
+        energy.append(track['energy'])
+        
+        
+dataframe = pd.DataFrame({'Track':trackName, 'Artist':artistName, 'Popularity':trackPop, 'Danceability':danceability,
+                         'Liveness':liveness, 'Happiness':valence, 'Speechiness':speechiness, 'Tempo':tempo,
+                         'Acousticness':acousticness, 'Energy':energy})
+
+#Set base style and size
+plt.style.use('fivethirtyeight')
+plt.figure(num=None, figsize=(6, 4), dpi=100)
+
+#Set subtle St. George's Cross underneath, don't want to come across strong
+rect = patches.Rectangle((0.4,0),0.2,1, color="red", alpha=0.01) 
+plt.gca().add_patch(rect)
+rect2 = patches.Rectangle((0,0.4),0.4,0.2, color="red", alpha=0.01) 
+plt.gca().add_patch(rect2)
+rect3 = patches.Rectangle((0.6,0.4),1,0.2, color="red", alpha=0.01) 
+plt.gca().add_patch(rect3)
+
+#Plot data
+ax = sns.scatterplot(x="Danceability", y="Happiness", data=dataframe, 
+                     s=100, color='#b50523')
+
+#Set title
+ax.text(x = 0.05, y = 1.15, s = "Finding the England Song for the Mood",
+               fontsize = 15, alpha = 0.9)
+#Set Annotations
+ax.text(x = 0.79, y = 0.76, s = "Eat My Goal",
+               fontsize = 10, alpha = 1)
+ax.text(x = 0.17, y = 0.38, s = "Jerusalem",
+               fontsize = 10, alpha = 1)
+ax.text(x = 0.6, y = 0.28, s = "Vindaloo",
+               fontsize = 10, alpha = 1)
+ax.text(x = 0.45, y = 0.95, s = "Is This The Way...",
+               fontsize = 10, alpha = 1)
+
+#Set mood examples
+ax.text(x = 0.85, y = 0.95, s = "Trippier FK",
+               fontsize = 10, alpha = 0.4)
+ax.text(x = 0.03, y = 0.05, s = "Mandzukic ghosts by Stones",
+               fontsize = 10, alpha = 0.4)
+
+#Remove grid and add axis lines
+ax.grid(False)
+ax.axhline(y=0.005, color='#414141', linewidth=1.5, alpha=.5)
+ax.axvline(x=0.005, color='#414141', linewidth=1.5, alpha=.5)
+
+#Set axis limits
+ax.set(ylim=(0,1))
+ax.set(xlim=(0,1))
+
+#Set axis labels
+ax.set_yticklabels(labels=['0', '20', '40', '60', '80','100%'], fontsize=12, color='#414141')
+ax.set_xticklabels(labels=['0', '20', '40', '60', '80','100%'], fontsize=12, color='#414141')
+
+#Set axis titles
+plt.xlabel('Danceability', fontsize=13, color='#2a2a2b')
+plt.ylabel('Happiness', fontsize=13, color='#2a2a2b')
+
+#Plot
+ax.plot()
