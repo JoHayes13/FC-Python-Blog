@@ -1,0 +1,15 @@
+import numpy as np
+import pandas as pd
+
+data = pd.read_csv("player_total.csv")
+
+
+def p90_Calculator(value, minutes):
+    return value/(minutes/90)
+    
+
+data["goals_per90"] = p90_Calculator(data.goals, data.minutes)
+data.goals_per90.fillna(0, inplace=True)
+
+
+data.sort_values(by='goals_per90', ascending =False)[data.minutes>400].head(10)[["name","goals_per90"]]
