@@ -1,0 +1,52 @@
+import pandas as pd
+import numpy as np
+
+
+stickersNeeded = 682
+packetsBought = 0
+stickersGot = []
+swapStickers = 0
+
+
+def calculateAlbum(stickersInPack = 5, costOfPackp = 5, stickerTotal=682):
+    stickersNeeded = stickerTotal
+    packetsBought = 0
+    stickersGot = []
+    swapStickers = 0
+
+
+    while stickersNeeded > 0:
+        #Buy a new packet
+        packetsBought += 1
+
+        for i in range(0,stickersInPack):
+            #Assign the sticker a random number
+            stickerNumber = np.random.randint(0,stickerTotal)
+
+            #Check if we have the sticker
+            if stickerNumber not in stickersGot:
+                #Add it to the album, then reduce our stickers needed count
+                stickersGot.append(stickerNumber)
+                stickersNeeded -= 1
+
+            else:
+                swapStickers += 1
+
+    return{"Packets":packetsBought,"Swaps":swapStickers,
+           "Total Cost":packetsBought*costOfPackp}
+           
+           
+calculateAlbum()
+
+# Let’s run this 1000 times over and see what we can truly expect if we want to complete the album:
+
+a=0
+b=0
+c=0
+
+for i in range(0, 1000):
+    a += calculateAlbum()["Packets"]
+    b += calculateAlbum()["Swaps"]
+    c += calculateAlbum()["Total Cost"]
+    
+{"Packets":a/1000,"Swaps":b/1000,"Total Cost":c/1000}
