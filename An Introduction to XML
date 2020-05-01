@@ -1,0 +1,65 @@
+import csv
+import xml.etree.ElementTree as et
+import numpy as np
+import pandas as pd
+from datetime import datetime as dt
+
+
+tree = et.ElementTree(file = "yourf24XMLfile.xml")
+gameFile = tree.getroot()
+
+
+team_dict = {gameFile[0].attrib["home_team_id"]: gameFile[0].attrib["home_team_name"],
+            gameFile[0].attrib["away_team_id"]: gameFile[0].attrib["away_team_name"]}
+            
+
+
+#Create empty lists for the 8 columns we're collecting data for
+x_origin = []
+y_origin = []
+x_destination = []
+y_destination = []
+outcome = []
+minute = []
+half = []
+team = []
+
+
+#Iterate through each game in our file - we only have one
+for game in gameFile:
+    
+    #Iterate through each event
+    for event in game:
+        
+        #If the event is a pass (ID = 1)
+        if event.attrib.get("type_id") == '1':
+            
+            #To the correct list, append the correct attribute using attrib.get()
+            x_origin.append(event.attrib.get("x"))
+            y_origin.append(event.attrib.get("y"))
+            outcome.append(event.attrib.get("outcome"))
+            minute.append(event.attrib.get("min"))
+            half.append(event.attrib.get("period_id"))
+            team.append(team_dict[event.attrib.get("team_id")])
+            
+            #Iterate through each qualifier 
+            for qualifier in event:
+                
+                #If the qualifier is relevant, append the information to the x or y destination lists
+                if qualifier.attrib.get("qualifier_id") == "140":
+                    x_destination.append(qualifier.attrib.get("value"))
+                if qualifier.attrib.get("qualifier_id") == "141":
+                    y_destination.append(qualifier.attrib.get("value"))
+                    
+                    
+#Create a list of our 8 columns/lists
+column_titles = ["team", "half", "min", "x_origin", "y_origin", "x_destination", "y_destination", "outcome"]
+            
+#Use pd.DataFrame to create our table, assign the data in the order of our columns and give it the column titles above
+final_table = pd.DataFrame(data=[team, half, minute, x_origin, y_origin, x_destination, y_destination, outcome], index=column_titles)
+
+#Transpose, or flip, the table. Otherwise, our table will run from left to right, rather than top to bottom
+final_table = final_table.T
+
+#Show us the top 5 rows of the table
+final_table.head()
