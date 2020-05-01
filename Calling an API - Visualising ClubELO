@@ -1,0 +1,35 @@
+import requests
+import csv
+from io import StringIO
+import pandas as pd
+from datetime import datetime
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+def plotClub(team, colour = "dimgray"):
+    
+    # Calling an API
+    r = requests.get('http://api.clubelo.com/' + str(team))
+    
+    # Formatting our request data
+    data = StringIO(r.text)
+    df = pd.read_csv(data, sep=",")
+    
+    # Formatting date columns
+    df.From = pd.to_datetime(df['From'])
+    df.To = pd.to_datetime(df['To'])
+    
+    # Visualisation
+    sns.set_style("dark")
+    fig = plt.figure(num=None, figsize=(12, 4), dpi=600)
+    axes = fig.add_subplot(1, 1, 1, facecolor='#edeeef')
+    fig.patch.set_facecolor('#edeeef')    
+    plt.plot_date(df.From, df.Elo,'-', color = colour)
+    plt.title("    " + str(team) + " - Elo Rating", loc="left",  fontsize=18, fontname="Arial Rounded MT Bold")
+    plt.show()
+    
+    
+    
+plotClub("RBLeipzig", "red")
